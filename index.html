@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rosemount Tank Gauging — Flyover of a Connected Terminal</title>
+  <meta name="description" content="Fly over a 3D storage terminal and follow the signal through the Rosemount Tank Gauging system, from radar gauge to control room." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="scroll-rail" aria-hidden="true"><div class="scroll-rail__fill" id="railFill"></div></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark"></span>
+      <span class="brand__txt">ROSEMOUNT<span class="brand__sub">Tank&nbsp;Gauging</span></span>
+    </div>
+    <nav class="topnav"><span class="topnav__hint">scroll to fly the signal home</span></nav>
+  </header>
+
+  <!-- ============ 3D FLYOVER (pinned scrub) ============ -->
+  <section class="flyover" id="flyover">
+    <div class="flyover__sticky">
+      <canvas id="scene"></canvas>
+      <div class="loader" id="loader"><span></span>building the terminal…</div>
+
+      <!-- intro headline, fades out after the first beat -->
+      <div class="intro" id="intro">
+        <p class="eyebrow">Emerson&nbsp;·&nbsp;Rosemount&trade; Tank Gauging</p>
+        <h1>Every drop,<br /><span class="grad">accounted&nbsp;for.</span></h1>
+        <p class="intro__lede">Fly over a working storage terminal and follow one
+          measurement on its journey — from the radar on the tank to the inventory
+          screen in the control room.</p>
+        <span class="intro__cue">scroll to begin ↓</span>
+      </div>
+
+      <!-- step list, bottom-left, vectr style -->
+      <ol class="steps" id="steps">
+        <li data-step="0">
+          <span class="steps__no">01</span>
+          <div class="steps__body">
+            <h3>Non-contact radar</h3>
+            <p>The <b>Rosemount 5900S</b> fires a microwave signal at the product
+              surface and times the echo — <b>±0.5&nbsp;mm</b>, custody-transfer
+              approved (OIML&nbsp;R85). Nothing touches the liquid.</p>
+          </div>
+        </li>
+        <li data-step="1">
+          <span class="steps__no">02</span>
+          <div class="steps__body">
+            <h3>Temperature &amp; mass</h3>
+            <p>The <b>2240S</b> reads up to 16 temperature points down the tank, so
+              the system corrects volume and computes true <b>mass</b> — radar +
+              temperature + pressure, hybrid density.</p>
+          </div>
+        </li>
+        <li data-step="2">
+          <span class="steps__no">03</span>
+          <div class="steps__body">
+            <h3>One smart hub</h3>
+            <p>The <b>2410 Tank Hub</b> powers and connects every field device on the
+              tank over one intrinsically-safe bus — with independent relay outputs
+              for <b>overfill alarms</b>.</p>
+          </div>
+        </li>
+        <li data-step="3">
+          <span class="steps__no">04</span>
+          <div class="steps__body">
+            <h3>The whole farm, one wire</h3>
+            <p>The <b>2460 System Hub</b> polls every tank and concentrates the data,
+              presenting the entire terminal to host systems over open protocols.</p>
+          </div>
+        </li>
+        <li data-step="4">
+          <span class="steps__no">05</span>
+          <div class="steps__body">
+            <h3>Into the control room</h3>
+            <p>The signal arrives at <b>TankMaster</b> — live inventory, custody
+              reports and alarms for the whole terminal, in one window.</p>
+          </div>
+        </li>
+        <li data-step="5">
+          <span class="steps__no">06</span>
+          <div class="steps__body">
+            <h3>The whole site, in your pocket</h3>
+            <p><b>TankMaster Mobile</b> takes that same live data out of the control
+              room — every tank on the site, real-time, on any phone or tablet,
+              wherever the work happens.</p>
+          </div>
+        </li>
+        <li data-step="6">
+          <span class="steps__no">07</span>
+          <div class="steps__body">
+            <h3>Every site, one network</h3>
+            <p>Zoom out and the picture connects: multiple terminals streaming up to
+              <b>HQ</b> and authorised external users — regional inventory, balances
+              and alarms across the whole operation, securely in one place.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="scrollcue" id="scrollcue" aria-hidden="true"><span></span></div>
+    </div>
+  </section>
+
+  <!-- ============ CONTROL ROOM (dark payoff) ============ -->
+  <main class="dark">
+    <section class="scene scene--software" data-scene id="software">
+      <div class="sw__copy reveal">
+        <span class="kicker">In the control room</span>
+        <h2>One source of truth.</h2>
+        <p class="lead"><b>Rosemount&nbsp;TankMaster</b> turns the signal into
+          decisions: live inventory, custody-transfer reports, batch movements and
+          alarms across the whole terminal — in one operator window.</p>
+      </div>
+      <div class="dashboard reveal" data-prog>
+        <div class="dash__head">
+          <span class="dash__dot"></span><span class="dash__dot"></span><span class="dash__dot"></span>
+          <span class="dash__title">TankMaster · WinOpi — Terminal Overview</span>
+          <span class="dash__live">● LIVE</span>
+        </div>
+        <div class="dash__grid">
+          <div class="card kpi"><span>Total stored</span><b><i class="count" data-to="184300">0</i> m³</b></div>
+          <div class="card kpi"><span>Net mass</span><b><i class="count" data-to="148720">0</i> t</b></div>
+          <div class="card kpi"><span>Tanks online</span><b><i class="count" data-to="32">0</i>/32</b></div>
+          <div class="card chart">
+            <span>Tank 07 — level trend</span>
+            <svg viewBox="0 0 300 90" class="spark"><polyline id="spark" fill="none" /></svg>
+          </div>
+          <div class="card alarm">
+            <span>Safety</span>
+            <b class="ok">All overfill loops armed</b>
+            <small>SIL-rated · independent of measurement</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--caps" data-scene id="caps">
+      <div class="caps__head reveal">
+        <span class="kicker">Why it matters</span>
+        <h2>What the system gives the&nbsp;terminal.</h2>
+      </div>
+      <div class="caps__grid">
+        <article class="cap reveal"><span class="cap__no">01</span><h3>Custody-transfer accuracy</h3><p>±0.5&nbsp;mm radar approved to OIML&nbsp;R85 &amp; API — settle bulk transfers on numbers both sides trust.</p></article>
+        <article class="cap reveal"><span class="cap__no">02</span><h3>Overfill prevention</h3><p>Independent, SIL-rated safety layer separate from the measurement loop — protecting people, assets and the environment.</p></article>
+        <article class="cap reveal"><span class="cap__no">03</span><h3>Real inventory</h3><p>Live net volume, mass and available room across the farm — plan movements and reconcile losses with confidence.</p></article>
+        <article class="cap reveal"><span class="cap__no">04</span><h3>Open connectivity</h3><p>Modbus, OPC &amp; WirelessHART into any DCS or ERP — and a clean path to Plantweb digital analytics.</p></article>
+        <article class="cap reveal"><span class="cap__no">05</span><h3>Hazardous-area ready</h3><p>Intrinsically-safe field network engineered for Zone&nbsp;0/1 terminals from day one.</p></article>
+        <article class="cap reveal"><span class="cap__no">06</span><h3>Lower lifecycle cost</h3><p>Non-contact, no moving parts, single-bus wiring and remote diagnostics — less to calibrate, less to maintain.</p></article>
+      </div>
+    </section>
+
+    <section class="scene scene--cta" data-scene id="cta">
+      <div class="ctawrap reveal">
+        <h2>From the tank to the&nbsp;dashboard,<br /><span class="grad">one connected signal.</span></h2>
+        <p>That's Rosemount Tank Gauging — measurement you can put your name to.</p>
+        <a class="btn btn--solid" href="#top">Replay the flyover ↑</a>
+      </div>
+      <footer class="foot">
+        <span>Rosemount&trade; Tank Gauging — interactive concept</span>
+        <span>Scroll-driven 3D flyover · components are real Emerson Rosemount models</span>
+      </footer>
+    </section>
+  </main>
+
+  <a id="top"></a>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

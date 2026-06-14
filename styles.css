@@ -1,0 +1,160 @@
+/* ============================================================
+   Rosemount Tank Gauging — 3D flyover + control room
+   Act 1: light, airy clay terminal (the field, in daylight)
+   Act 2: dark control room (dashboards & capabilities)
+   ============================================================ */
+:root{
+  --bg:#04070e; --bg2:#070c16; --panel2:#0e1726; --line:#1a2740;
+  --ink:#e9f1fb; --muted:#8493ad;
+  --cyan:#4dd0ff; --cyan-soft:#6ad6ff; --amber:#ffb86b; --green:#5ce6a8;
+  --glow:0 0 40px rgba(77,208,255,.35);
+  --maxw:1180px; --ease:cubic-bezier(.22,.61,.36,1);
+  /* light act */
+  --sky:#e7eef7; --ink2:#16202e; --muted2:#5a6a80; --line2:#cdd7e6;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--sky);color:var(--ink);
+  font-family:'Sora',system-ui,sans-serif;font-weight:300;line-height:1.55;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:700;line-height:1.05;letter-spacing:-.02em;margin:0}
+b{font-weight:600}
+.grad{background:linear-gradient(100deg,var(--cyan),var(--amber));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--cyan);display:inline-block;margin-bottom:18px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.74rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted2);margin:0 0 22px}
+
+/* progress rail */
+.scroll-rail{position:fixed;top:0;left:0;height:3px;width:100%;z-index:60;background:rgba(20,40,70,.08)}
+.scroll-rail__fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--amber));box-shadow:0 0 12px var(--cyan)}
+
+/* topbar (adapts: dark text over light act, light text over dark act) */
+.topbar{position:fixed;top:0;left:0;width:100%;z-index:55;display:flex;align-items:center;
+  justify-content:space-between;padding:18px clamp(18px,4vw,46px);pointer-events:none;
+  transition:color .4s var(--ease);color:var(--ink2)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}
+.brand__mark{width:14px;height:14px;border-radius:3px;background:var(--cyan);box-shadow:var(--glow);transform:rotate(45deg)}
+.brand__txt{font-size:.92rem;display:flex;flex-direction:column;line-height:1.05}
+.brand__sub{font-weight:400;font-size:.66rem;letter-spacing:.26em;opacity:.6;text-transform:uppercase}
+.topnav__hint{font-family:'JetBrains Mono',monospace;font-size:.68rem;opacity:.6;letter-spacing:.12em}
+.topbar.over-dark{color:var(--ink)}
+@media(max-width:680px){.topnav__hint{display:none}}
+
+/* ============================================================
+   ACT 1 — the 3D flyover
+   ============================================================ */
+.flyover{position:relative;height:900vh;z-index:1}
+.flyover__sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;
+  font-family:'JetBrains Mono';font-size:.8rem;color:var(--muted2)}
+.loader span{width:16px;height:16px;border:2px solid var(--line2);border-top-color:var(--cyan);
+  border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* intro headline over the wide establishing shot */
+.intro{position:absolute;left:clamp(20px,6vw,90px);top:50%;transform:translateY(-50%);
+  max-width:600px;color:var(--ink2);z-index:4}
+.intro h1{font-size:clamp(2.8rem,7vw,5.6rem);font-weight:800;letter-spacing:-.03em}
+.intro__lede{font-size:clamp(1.02rem,1.5vw,1.3rem);color:var(--muted2);max-width:480px;margin:1.4rem 0 1.6rem}
+.intro__cue{font-family:'JetBrains Mono';font-size:.74rem;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase}
+
+/* step list, bottom-left (vectr style) */
+.steps{position:absolute;left:clamp(20px,5vw,70px);bottom:clamp(28px,6vh,64px);
+  margin:0;padding:0;list-style:none;width:min(440px,82vw);z-index:4;color:var(--ink2)}
+.steps li{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;
+  padding:9px 0;opacity:.45;transition:opacity .4s var(--ease)}
+.steps li.on{opacity:1}
+.steps__no{font-family:'JetBrains Mono';font-size:.78rem;font-weight:700;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;background:rgba(20,40,70,.06);color:var(--ink2);transition:.4s var(--ease)}
+.steps li.on .steps__no{background:#fff;color:var(--cyan);box-shadow:0 6px 20px rgba(43,182,230,.3)}
+.steps__body h3{font-size:1rem;font-weight:700}
+.steps__body p{margin:0;font-size:.84rem;color:var(--muted2);line-height:1.5;
+  max-height:0;overflow:hidden;opacity:0;transition:max-height .5s var(--ease),opacity .4s var(--ease),margin .4s}
+.steps li.on .steps__body p{max-height:200px;opacity:1;margin-top:7px;
+  padding-left:14px;border-left:2px solid var(--cyan)}
+.steps__body b{color:var(--ink2)}
+
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  width:24px;height:38px;border:2px solid var(--line2);border-radius:14px;z-index:4}
+.scrollcue span{position:absolute;top:7px;left:50%;width:4px;height:8px;border-radius:2px;background:var(--cyan);
+  transform:translateX(-50%);animation:cue 1.6s var(--ease) infinite}
+@keyframes cue{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,14px)}}
+
+@media(max-width:680px){
+  .intro{top:14%;transform:none}
+  .steps{width:88vw}
+  .steps__body p{font-size:.8rem}
+}
+
+/* ============================================================
+   ACT 2 — dark control room
+   ============================================================ */
+.dark{position:relative;z-index:2;background:
+    radial-gradient(1200px 700px at 80% -5%, rgba(77,208,255,.10), transparent 60%),
+    radial-gradient(900px 600px at 0% 30%, rgba(255,184,107,.06), transparent 55%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  color:var(--ink);border-top:1px solid rgba(77,208,255,.18)}
+.dark b{color:var(--ink)}
+.scene{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:120px clamp(20px,6vw,90px)}
+.scene .reveal{opacity:0;transform:translateY(38px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.scene.in .reveal{opacity:1;transform:none}
+.scene.in .reveal:nth-child(2){transition-delay:.08s}
+h2{font-size:clamp(2rem,4.4vw,3.4rem)}
+.lead{font-size:clamp(1.02rem,1.4vw,1.22rem);color:#cdd8e8;margin:.4rem 0 1.1rem}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.5em;text-decoration:none;font-weight:600;font-size:.95rem;
+  padding:.8em 1.35em;border-radius:999px;transition:.25s var(--ease)}
+.btn--solid{color:#04070e;background:linear-gradient(100deg,var(--cyan),var(--amber));box-shadow:var(--glow)}
+.btn--solid:hover{transform:translateY(-2px) scale(1.02)}
+
+/* software / dashboard */
+.scene--software{align-items:center}
+.sw__copy{margin:0 auto 40px;text-align:center;max-width:680px}
+.dashboard{width:min(960px,100%);margin:0 auto;border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,#0a1220,#070d18);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.dash__head{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#0b1424;border-bottom:1px solid var(--line)}
+.dash__dot{width:11px;height:11px;border-radius:50%;background:#22354f}
+.dash__title{font-family:'JetBrains Mono';font-size:.74rem;color:var(--muted);margin-left:10px}
+.dash__live{margin-left:auto;font-family:'JetBrains Mono';font-size:.68rem;color:var(--green);letter-spacing:.1em}
+.dash__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:18px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;min-height:96px}
+.card span{font-family:'JetBrains Mono';font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card.kpi b{display:block;margin-top:8px;font-size:1.7rem;font-weight:700}
+.card.chart{grid-column:span 2}
+.card.alarm{display:flex;flex-direction:column;gap:6px}
+.card.alarm b.ok{color:var(--green);font-size:1.05rem;font-weight:600}
+.card.alarm small{color:var(--muted);font-family:'JetBrains Mono';font-size:.64rem}
+.spark{width:100%;height:64px;margin-top:8px}
+#spark{stroke:var(--cyan);stroke-width:2.5;filter:drop-shadow(0 0 6px var(--cyan))}
+@media(max-width:680px){.dash__grid{grid-template-columns:1fr 1fr}.card.chart{grid-column:span 2}}
+
+/* capabilities */
+.caps__head{margin:0 auto 46px;text-align:center;max-width:720px}
+.caps__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:var(--maxw);margin:0 auto;width:100%}
+.cap{background:linear-gradient(180deg,#0a1220,#080e1a);border:1px solid var(--line);border-radius:16px;padding:26px;transition:.3s var(--ease)}
+.cap:hover{border-color:var(--cyan);box-shadow:var(--glow);transform:translateY(-4px)}
+.cap__no{font-family:'JetBrains Mono';font-size:.8rem;color:var(--cyan);letter-spacing:.1em}
+.cap h3{font-size:1.22rem;margin:12px 0 8px}
+.cap p{color:var(--muted);font-size:.94rem;margin:0}
+@media(max-width:900px){.caps__grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.caps__grid{grid-template-columns:1fr}}
+
+/* cta */
+.scene--cta{justify-content:center;text-align:center;align-items:center}
+.ctawrap{max-width:760px;margin:0 auto}
+.ctawrap h2{font-size:clamp(2rem,5vw,3.6rem)}
+.ctawrap p{color:var(--muted);margin:1rem 0 2rem;font-size:1.1rem}
+.foot{position:absolute;bottom:26px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-family:'JetBrains Mono';font-size:.66rem;color:#4a5a73;text-align:center;padding:0 20px}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  .scene .reveal{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}

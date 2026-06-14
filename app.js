@@ -461,10 +461,10 @@ function updateScene(p, t, tp = p) {
   // ---- step 02: slice the hero tank open toward the camera (cross-section) ----
   const hv = heroTank.userData;
   // keyed off the scroll target (not the lag-smoothed camera value) so the slice
-  // opens exactly on schedule: closed until 80% along the step01→step02 path
-  // (tp=1.8/7), fully open at the temperature beat (tp=2/7), then closes.
+  // opens exactly on schedule: starts opening halfway through step 01 (tp=1.5/7),
+  // fully open at the temperature beat (tp=2/7), then closes.
   const s2 = Math.min(
-    clamp((tp - 1.8 / 7) / (0.2 / 7), 0, 1),                  // ramp up: 0 until 80% in, 1 by step 02
+    clamp((tp - 1.5 / 7) / (0.5 / 7), 0, 1),                  // ramp up: 0 until halfway in, 1 by step 02
     clamp(1 - (tp - 2 / 7) / 0.085, 0, 1));                   // ramp down after the beat
   // plane normal points away from the camera, so the camera-facing half is removed
   heroDir.set(camera.position.x, 0, camera.position.z).normalize();

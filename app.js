@@ -280,8 +280,6 @@ regional.add(grid);
 // remote sites — small clay tank farms (with their own gauges) scattered across the region
 const remoteClay = new THREE.MeshStandardMaterial({ color: '#d7e2f0', roughness: .96, metalness: 0, transparent: true, opacity: 0, emissive: '#3a4a5e', emissiveIntensity: .18 });
 const remoteCyan = new THREE.MeshBasicMaterial({ color: '#39c6ef', transparent: true, opacity: 0, toneMapped: false });
-// ground "site pad" ring — makes each location read as a marker on the map, even from steep angles
-const padMat = new THREE.MeshBasicMaterial({ color: '#39c6ef', transparent: true, opacity: 0, toneMapped: false, side: THREE.DoubleSide });
 function miniSite(cx, cz) {
   const g = new THREE.Group();
   const specs = [[0, 0, 3.3, 6.9, remoteCyan], [7.5, 2.2, 2.4, 5.1, remoteCyan], [-6, 3, 2.8, 5.8, null], [2.2, -6, 2.1, 4.5, null]];
@@ -293,24 +291,30 @@ function miniSite(cx, cz) {
       gauge.position.set(x + r * 0.4, h + 0.4, z); g.add(gauge);
     }
   });
-  const pad = new THREE.Mesh(new THREE.RingGeometry(7, 7.8, 48), padMat);
-  pad.rotation.x = -Math.PI / 2; pad.position.y = 0.04; g.add(pad);
   g.position.set(cx, 0, cz);
   g.userData.top = new THREE.Vector3(cx, 0.3, cz);
   regional.add(g);
   return g;
 }
-const remoteSpots = [[-58, -34], [64, -48], [78, 28], [-44, 68], [33, 80], [-80, 12]];
+// remote tank-farm sites scattered across the region (the HQ spot is excluded — it gets the office below)
+const remoteSpots = [[-58, -34], [64, -48], [78, 28], [33, 80], [-80, 12]];
 const sites = remoteSpots.map(([x, z]) => miniSite(x, z));
 
-// HQ — a glowing ground hub at the centre of the region, marked by a halo ring
-const hqPos = new THREE.Vector3(16, 0, 12);
-const hqTopPos = new THREE.Vector3(16, 0.5, 12);
-const hqRingMat = new THREE.MeshBasicMaterial({ color: '#39c6ef', transparent: true, opacity: 0, toneMapped: false, side: THREE.DoubleSide });
-const hqRing = new THREE.Mesh(new THREE.TorusGeometry(6, 0.18, 10, 64), hqRingMat);
-hqRing.position.set(hqPos.x, 0.06, hqPos.z); hqRing.rotation.x = Math.PI / 2; regional.add(hqRing);
-const hqPad = new THREE.Mesh(new THREE.RingGeometry(8.5, 9.3, 48), padMat);
-hqPad.rotation.x = -Math.PI / 2; hqPad.position.set(hqPos.x, 0.04, hqPos.z); regional.add(hqPad);
+// HQ — a small clay-box office where the largest remote cluster used to sit;
+// every remote site and the main terminal route their data line up to it.
+function buildHQ(cx, cz) {
+  const g = new THREE.Group();
+  // a simple low office: a few clay boxes of varying height
+  [[0, 0, 9, 4, 7], [6, -2.5, 4, 6.5, 5], [-5.5, 3, 5, 2.8, 4.5]].forEach(([x, z, w, h, d]) => {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), remoteClay);
+    b.position.set(x, h / 2, z); b.castShadow = true; b.receiveShadow = true; g.add(b);
+  });
+  g.position.set(cx, 0, cz); regional.add(g); return g;
+}
+const hqSpot = [-44, 68];
+const hqPos = new THREE.Vector3(hqSpot[0], 0, hqSpot[1]);
+const hqTopPos = new THREE.Vector3(hqSpot[0], 0.5, hqSpot[1]);
+buildHQ(hqSpot[0], hqSpot[1]);
 
 // glowing connection arcs: every site (+ the main terminal) up to HQ
 const arcMat = new THREE.MeshBasicMaterial({ color: '#39c6ef', transparent: true, opacity: 0, toneMapped: false });
@@ -490,10 +494,7 @@ function updateScene(p, t, tp = p) {
   if (regional.visible) {
     remoteClay.opacity = reg;
     remoteCyan.opacity = reg;
-    padMat.opacity = reg * 0.6;
     grid.material.opacity = reg * 0.7;
-    hqRingMat.opacity = reg * 0.8;
-    hqRing.rotation.z += 0.012;
     const arcP = clamp((p - 0.74) / 0.2, 0, 1);   // connection arcs + data pulses
     arcMat.opacity = arcP * 0.85;
     for (const a of arcs) {

@@ -104,7 +104,7 @@ function tank(x, z, r, h, accent, cutaway) {
 // toward the camera (via heroPlane) to reveal the radar waves and the 2240S
 // multi-spot temperature probe inside the product.
 function buildCutawayTank(g, r, h) {
-  const fillH = h * 0.56;
+  const fillH = h * 0.30;   // product level — ~30% of capacity
   // closed shell (clipped open only at step 02) — double-sided so the inner wall shows when cut
   const shell = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 64), heroShellMat);
   shell.position.y = h / 2; shell.castShadow = true; shell.receiveShadow = true; g.add(shell);
@@ -220,9 +220,9 @@ for (let i = 0; i < 14; i++) figure(-14 + Math.random() * 40, -18 + Math.random(
 
 /* ---------------- the glowing signal path ---------------- */
 const wp = [
-  heroTank.userData.gaugeWorld.clone(),            // at the radar
-  new THREE.Vector3(1.4, 6.6, 0.4),
-  new THREE.Vector3(2.8, 3.2, 0.9),
+  heroTank.userData.gaugeWorld.clone(),            // at the radar (5900S, on top)
+  new THREE.Vector3(2.9, 7.6, 1.5),                // out to the tank's top edge, hub side
+  new THREE.Vector3(3.15, 3.6, 1.6),              // down the OUTSIDE wall (clear of the radar waves)
   new THREE.Vector3(3.4, 1.6, 1.5),                // tank hub 2410
   new THREE.Vector3(8.3, 1.0, 7.6),
   new THREE.Vector3(14.175, 1.2, 14.85),           // system hub 2460

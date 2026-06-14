@@ -436,7 +436,7 @@ let lastStep = -1;
 /* ---------------- scene update (shared by loop + debug capture) ---------------- */
 const tmpLook = new THREE.Vector3();
 const heroDir = new THREE.Vector3();
-function updateScene(p, t) {
+function updateScene(p, t, tp = p) {
   // camera along its curve
   camera.position.copy(camPos.getPoint(p));
   camLook.getPoint(p, tmpLook);
@@ -460,10 +460,12 @@ function updateScene(p, t) {
 
   // ---- step 02: slice the hero tank open toward the camera (cross-section) ----
   const hv = heroTank.userData;
-  // opens starting 80% along the step01→step02 path (p=1.8/7), fully open at the temperature beat (p=2/7), then closes
+  // keyed off the scroll target (not the lag-smoothed camera value) so the slice
+  // opens exactly on schedule: closed until 80% along the step01→step02 path
+  // (tp=1.8/7), fully open at the temperature beat (tp=2/7), then closes.
   const s2 = Math.min(
-    clamp((p - 1.8 / 7) / (0.2 / 7), 0, 1),                   // ramp up: 0 until 80% in, 1 by step 02
-    clamp(1 - (p - 2 / 7) / 0.085, 0, 1));                    // ramp down after the beat
+    clamp((tp - 1.8 / 7) / (0.2 / 7), 0, 1),                  // ramp up: 0 until 80% in, 1 by step 02
+    clamp(1 - (tp - 2 / 7) / 0.085, 0, 1));                   // ramp down after the beat
   // plane normal points away from the camera, so the camera-facing half is removed
   heroDir.set(camera.position.x, 0, camera.position.z).normalize();
   heroPlane.normal.set(-heroDir.x, 0, -heroDir.z);
@@ -505,7 +507,7 @@ function updateScene(p, t) {
 function frame(t) {
   current = lerp(current, target, reduce ? 1 : 0.075);
   const p = current;
-  updateScene(p, t);
+  updateScene(p, t, target);
 
   // overlay state
   intro.style.opacity = clamp(1 - p * 7, 0, 1);

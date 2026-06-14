@@ -460,7 +460,10 @@ function updateScene(p, t) {
 
   // ---- step 02: slice the hero tank open toward the camera (cross-section) ----
   const hv = heroTank.userData;
-  const s2 = clamp(1 - Math.abs(p - 2 / 7) / 0.085, 0, 1);   // 1 at the temperature beat, else 0
+  // opens starting 80% along the step01→step02 path (p=1.8/7), fully open at the temperature beat (p=2/7), then closes
+  const s2 = Math.min(
+    clamp((p - 1.8 / 7) / (0.2 / 7), 0, 1),                   // ramp up: 0 until 80% in, 1 by step 02
+    clamp(1 - (p - 2 / 7) / 0.085, 0, 1));                    // ramp down after the beat
   // plane normal points away from the camera, so the camera-facing half is removed
   heroDir.set(camera.position.x, 0, camera.position.z).normalize();
   heroPlane.normal.set(-heroDir.x, 0, -heroDir.z);
